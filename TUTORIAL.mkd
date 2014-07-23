@@ -447,8 +447,9 @@ extension.
 [PyYAML]: http://pyyaml.org/
 [libyaml]: http://pyyaml.org/wiki/LibYAML
 
-If, for whatever reason, you cannot use PyYAML, you can still use beanstalkc
-and just leave the YAML responses unparsed. To do that, pass `parse_yaml=False`
+If, for whatever reason, you cannot use PyYAML, you can still use beanstalkc.
+beanstalkc includes a limited parser which may suit your needs, or you can
+just leave the YAML responses unparsed. To do that, pass `parse_yaml=False`
 when creating the `Connection`:
 
     >>> beanstalk = beanstalkc.Connection(host='localhost',
@@ -482,3 +483,8 @@ Alternatively, you can also pass a function to be used as YAML parser:
     >>> beanstalk.close()
 
 This should come in handy if PyYAML simply does not fit your needs.
+
+The output of the builtin parser is mostly identical to PyYAML for the
+data returned by beanstalkd. The known difference is that all non-integer
+values are left as strings. This affects a limited set of keys in the
+stats() response.

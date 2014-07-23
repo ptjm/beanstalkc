@@ -50,8 +50,7 @@ class Connection(object):
             try:
                 parse_yaml = __import__('yaml').load
             except ImportError:
-                logging.error('Failed to load PyYAML, will not parse YAML')
-                parse_yaml = False
+                parse_yaml = self.__yparse
         self._connect_timeout = connect_timeout
         self._parse_yaml = parse_yaml or (lambda x: x)
         self.host = host
@@ -250,6 +249,23 @@ class Connection(object):
         return self._interact_yaml('stats-job %d\r\n' % jid,
                                    ['OK'],
                                    ['NOT_FOUND'])
+
+    @staticmethod
+    def __yparse(stats):
+        "best efforts yaml parser, sufficient for tube stats"
+        try:
+            t = stats[4:].rstrip().split('\n')
+            if t and t[0][:2] != '- ':
+                # We need to make the second argument an int if possible.
+                # The weird order (not ...) is to ensure '0' gets converted
+                # to int
+                return dict((y[0], not y[1].isdigit() and y[1] or int(y[1]))
+                            for y in (x.split(': ', 1) for x in t))
+            else:
+                return [x[2:] for x in t]
+        except:
+            return stats
+
 
 
 class Job(object):
